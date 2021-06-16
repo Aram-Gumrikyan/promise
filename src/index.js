@@ -22,16 +22,41 @@
 // let config = {
 //     type: "DELETE",
 // };
-// let config = {};
-// let obj = ajax("https://jsonplaceholder.typicode.com/todos/1", config);
-// obj.then(
-//     (res) => {
-//         console.log(res);
-//     },
-//     (e) => {
-//         console.log(e);
-//     }
-// );
+//
+//
+//
+//
+let config = {};
+let obj = ajax("https://jsonplaceholder.typicode.com/todos/1", config);
+obj.then(
+    (res) => {
+        obj = new MyPromise(function () {
+            setTimeout(() => {
+                this.resolve("Hello");
+            }, 1000);
+        });
+        return obj;
+    },
+    (e) => {
+        console.log(e);
+    }
+)
+    .then((res) => {
+        res.then((res) => {
+            console.log(res);
+        });
+        let obj = new MyPromise(function () {
+            setTimeout(() => {
+                this.resolve("Hello2");
+            }, 3000);
+        });
+        return obj;
+    })
+    .then((res) => {
+        res.then((res) => {
+            console.log(res);
+        });
+    });
 //
 //
 //

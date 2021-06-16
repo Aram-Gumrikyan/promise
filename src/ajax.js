@@ -1,62 +1,51 @@
-function ajax(url, config) {
+function ajax(url, { type = "GET", responseType = "json", headers = {}, data } = {}) {
     try {
-        if (!config) {
-            config = {};
-        }
         configValidation();
         urlValidation(url);
     } catch (e) {
         return new MyPromise(function () {
-            e.message ? this.reject(e.message) : this.reject(e);
+            this.reject(e.message);
         });
     }
 
     function configValidation() {
-        let types = ["GET", "POST", "PUT", "PATCH", "DELETE"];
-        let responseTypes = ["arraybuffer", "blob", "document", "json", "text"];
-        let type = types.find((type) => type === config.type);
-        let responseType = responseTypes.find((responseType) => responseType === config.responseType);
-        if (config.type) {
-            if (!type) throw "config type is wrong";
-        } else {
-            config.type = "GET";
-        }
+        const types = ["GET", "POST", "PUT", "PATCH", "DELETE"];
+        const responseTypes = ["arraybuffer", "blob", "document", "json", "text"];
 
-        if (config.responseType) {
-            if (!responseType) throw "config type is wrong";
-        } else {
-            config.responseType = "json";
-        }
+        const typeLoc = types.find((typeLoc) => typeLoc === type);
+        const responseTypeLoc = responseTypes.find((responseTypeLoc) => responseTypeLoc === responseType);
+
+        if (!typeLoc || !responseTypeLoc) throw new Error("config is wrong");
     }
 
     function urlValidation(url) {
         url = new URL(url);
         if (url.protocol !== "https:" && url.protocol !== "http:") {
-            throw "url is wrong";
+            throw new Error("url is wrong");
         }
-        let regex = /\.([a-z]{2,3})\/?$/g;
+        // check is in the end have country code
+        const regex = /\.([a-z]{2,3})\/?$/g;
         if (!url.host.match(regex)) {
-            throw "url is wrong";
+            throw new Error("url is wrong");
         }
-        if (config.type !== "GET") {
+        if (type !== "GET") {
             if (url.pathname === "/") {
-                throw "url is wrong";
+                throw new Error("url is wrong");
             }
         }
     }
 
     return new MyPromise(function () {
-        let xhr = new XMLHttpRequest();
-        xhr.open(config.type, url);
-        xhr.responseType = config.responseType;
+        const xhr = new XMLHttpRequest();
+        xhr.open(type, url);
+        xhr.responseType = responseType;
 
-        if (config.headers) {
-            for (let name of Object.keys(config.headers)) {
-                xhr.setRequestHeader(name, config.headers[name]);
-            }
+        for (let name of Object.keys(headers)) {
+            xhr.setRequestHeader(name, headers[name]);
         }
-        if (config.data) {
-            xhr.send(JSON.stringify(config.data));
+
+        if (data) {
+            xhr.send(JSON.stringify(data));
         } else {
             xhr.send();
         }
@@ -68,6 +57,7 @@ function ajax(url, config) {
                 this.reject(xhr.status);
             }
         };
+
         xhr.onerror = () => {
             this.reject("Network error");
         };

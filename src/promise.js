@@ -98,7 +98,7 @@ class MyPromise {
         let types = [this._resolve, this._reject];
         let res;
         if (func) {
-            res = func.call(null, types[resType]);
+            res = func(types[resType]);
             if (res) {
                 switch (resType) {
                     case 0:
